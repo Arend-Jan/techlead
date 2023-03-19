@@ -12,27 +12,6 @@ use std::io::{BufRead, BufReader};
 use std::iter::Skip;
 use std::time::Duration;
 
-/// This program is a command-line interface (CLI) example that demonstrates how to use the
-/// `chat-gpt-lib-rs` library to interact with an AI model based on the GPT-3.5-Turbo architecture.
-/// The CLI allows users to communicate with the AI model as if they are chatting with the Star Trek
-/// computer.
-///
-/// The main function begins by loading environment variables from the `.env` file, including the
-/// API key and icon usage setting. It then initializes the `ChatGPTClient` and message history with
-/// a system message that sets the context for the AI model.
-///
-/// The program checks if there are any command-line arguments provided, and if so, it processes
-/// the user input from these arguments as the first chat message. Afterwards, it enters the main
-/// loop where user input is accepted and responses are generated.
-///
-/// A helper function, `process_user_input`, handles processing the user input, making the API call,
-/// and displaying the computer's response. The function takes the user input, adds it to the message
-/// history, prepares the `ChatInput` object, and then sends the API request. While waiting for the
-/// API response, a spinner is displayed to indicate progress. Once the response is received, the
-/// computer's response is extracted, displayed to the user, and added to the message history.
-///
-/// For an enhanced experience with icons, the terminal must use Nerd Fonts. This requirement
-/// enables the program to display icons alongside text. https://www.nerdfonts.com/
 
 // The main function, which is asynchronous due to the API call
 #[tokio::main]
@@ -93,6 +72,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
+// this is what makes this the techlead cli application
+// Here we set the behaviour of our chat gpt client
+// for now it works for Rust project only
 async fn system_content() -> Result<String, Box<dyn Error>> {
     let mut return_value = "You're the techlead on this project".to_string();
     let root = ".";
