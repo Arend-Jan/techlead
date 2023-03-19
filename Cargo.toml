@@ -9,7 +9,6 @@ authors = ["Arend-Jan Oosterveld <arendjan.oosterveld@gmail.com>"]
 readme = "README.md"
 keywords = ["openai", "chatgpt", "gpt", "api", "client"]
 categories = ["api-bindings", "text-processing", "cli"]
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 chat-gpt-lib-rs = "0.1.5"
