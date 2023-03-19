@@ -1,4 +1,7 @@
-# Techlead CLI
+[![Crates.io](https://img.shields.io/crates/v/techlead.svg)](https://crates.io/crates/techlead)
+[![Documentation](https://docs.rs/techlead/badge.svg)](https://docs.rs/techlead/)
+[![Codecov](https://codecov.io/github/arend-jan/techlead/coverage.svg?branch=main)](https://codecov.io/gh/arend-jan/techlead)
+[![Dependency status](https://deps.rs/repo/github/arend-jan/techlead/status.svg)](https://deps.rs/repo/github/arend-jan/techlead) Techlead CLI
 Techlead CLI is a command-line interface that allows you to chat with an AI assistant powered by the OpenAI GPT language model. This CLI was designed to be used by developers managing a Rust project.
 
 ## Installation
@@ -23,7 +26,7 @@ techlead "Hello, how can I help you today?"
 ```
 
 ## Credits
-This project was made with the [Chat GPT Library for Rust](https://github.com/BlackPhlox/chat-gpt-lib-rs), which provides a Rust API for the OpenAI GPT language model.
+This project was made with the [Chat GPT Library for Rust](https://github.com/BlackPhlox/techlead), which provides a Rust API for the OpenAI GPT language model.
 
 ## License
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
