@@ -16,6 +16,8 @@ This will compile and run the project. Note that you will need an OpenAI API key
 
 Once the Techlead CLI is up and running, you can start chatting with the AI assistant. The assistant is specifically trained to help with Rust project management, so feel free to ask questions related to that topic. You can also provide command-line arguments to the CLI to pre-populate the chat with a message.
 
+Before running the Techlead CLI, make sure that you have set your OpenAI API key in the .env file. To do so, open the .env file and replace `OPENAI_API_KEY=<your_api_key_here>` with your actual OpenAI API key.
+
 Here's an example of how to start a chat with a pre-populated message:
 
 ```
