@@ -12,7 +12,6 @@ use std::io::{BufRead, BufReader};
 use std::iter::Skip;
 use std::time::Duration;
 
-
 // The main function, which is asynchronous due to the API call
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
