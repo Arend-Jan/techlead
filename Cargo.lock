@@ -232,9 +232,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chat-gpt-lib-rs"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9299432a75b03e29bf6906449576762625e815c718e78e79690e24b475b51b73"
+checksum = "1f383deee5559e595c7fed9d38fb5e5ad1cd01503577fec07f76e934d3d2cf94"
 dependencies = [
  "env_logger",
  "log",
