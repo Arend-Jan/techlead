@@ -1,11 +1,11 @@
-use chat_gpt_lib_rs::client::{ChatGPTError, Message};
-use chat_gpt_lib_rs::{ChatGPTClient, ChatInput, Model, Role};
+use anyhow::Context;
+use chat_gpt_lib_rs::client::Message;
+use chat_gpt_lib_rs::{ChatGPTClient, ChatInput, ChatResponse, Model, Role};
 use console::{style, StyledObject};
 use dotenvy::dotenv;
 use ignore::WalkBuilder;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::env;
-use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, Write};
 use std::io::{BufRead, BufReader};
@@ -14,7 +14,7 @@ use std::time::Duration;
 
 // The main function, which is asynchronous due to the API call
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     // Initialize the logger
     env_logger::init();
 
@@ -22,7 +22,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
     // Get the API key and icon usage setting from the environment variables
-    let api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not found in .env");
+    let api_key =
+        env::var("OPENAI_API_KEY").context("Failed to read OPENAI_API_KEY environment variable")?;
 
     // Add USE_ICONS=true to your .env file, if your terminal is running with a
     // Nerd Font, so you get some pretty icons
@@ -34,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize the ChatGPT client
     let client = ChatGPTClient::new(&api_key, "https://api.openai.com");
 
-    let content = system_content().await?;
+    let content = system_content(&api_key).await?;
 
     // Initialize the message history with a system message
     let mut messages = vec![Message {
@@ -60,22 +61,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             style("Input: ").green()
         };
         print!("{}", input_prompt);
-        stdout().flush().unwrap();
+        stdout().flush().context("Failed to flush stdout")?;
 
         // Read the user input
         let mut user_message_content = String::new();
-        stdin().read_line(&mut user_message_content).unwrap();
+        stdin()
+            .read_line(&mut user_message_content)
+            .context("Failed to read user input")?;
 
         // Process the user input and generate a response
-        process_user_input(&client, &mut messages, user_message_content).await?;
+        process_user_input(&client, &mut messages, user_message_content)
+            .await
+            .context("Failed to process user input")?;
     }
 }
 
 // this is what makes this the techlead cli application
 // Here we set the behaviour of our chat gpt client
 // for now it works for Rust project only
-async fn system_content() -> Result<String, Box<dyn Error>> {
-    let mut return_value = "You're the techlead on this project".to_string();
+async fn system_content(api_key: &String) -> anyhow::Result<String> {
+    let mut return_value = "You are a very helpfull techlead of this project, who likes to teach and show code solutions.".to_string();
     let root = ".";
     let walker = WalkBuilder::new(root)
         .standard_filters(false)
@@ -109,13 +114,32 @@ async fn system_content() -> Result<String, Box<dyn Error>> {
                 if let Some(ext) = ext {
                     match ext {
                         "md" | "rs" | "toml" => {
-                            return_value = format!("{}===\n", return_value);
+                            // Set up a spinner to display while waiting for the API response
+                            let spinner = ProgressBar::new_spinner();
+                            spinner.set_style(
+                                ProgressStyle::default_spinner()
+                                    .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
+                                    .template("{spinner:.green} Make summary for file ...")
+                                    .unwrap(),
+                            );
+                            spinner.enable_steady_tick(Duration::from_millis(100));
+
+                            return_value = format!("{return_value}# {name}\n");
                             let file = File::open(path).unwrap();
                             let reader = BufReader::new(file);
+                            let mut text_to_summarize = String::new();
                             for line in reader.lines() {
-                                return_value = format!("{}{}\n", return_value, line.unwrap());
+                                text_to_summarize =
+                                    format!("{}{}\n", text_to_summarize, line.unwrap());
                             }
-                            return_value = format!("{}===\n", return_value);
+                            //println!("to_summarize: {text_to_summarize}");
+                            let summary = summary(&api_key, text_to_summarize).await?;
+                            return_value = format!("{return_value}\n {name} summary: {:?}", summary.choices[0].message.content);
+
+                            spinner.finish_and_clear();
+
+                            return_value = format!("{}\n", return_value);
+                            println!("{return_value}");
                         }
                         _ => {}
                     }
@@ -123,15 +147,43 @@ async fn system_content() -> Result<String, Box<dyn Error>> {
             }
         }
     }
-
     Ok(return_value)
+}
+
+async fn summary(api_key: &String, to_summarize: String) -> anyhow::Result<ChatResponse> {
+    let client = ChatGPTClient::new(&api_key, "https://api.openai.com");
+    let content = "You output only the summary of a given input, with ther purpose to make give a consise input for a co-developer prompt. If there is code in the file, make it super compact and add it to the summary.".to_string();
+
+    // Initialize the message history with a system message
+    let mut messages = vec![Message {
+        role: Role::System,
+        content,
+    }];
+
+    // Add a user message with the text to be summarized
+    messages.push(Message {
+        role: Role::User,
+        content: format!("{}", to_summarize),
+    });
+
+    let input = ChatInput {
+        model: Model::Gpt3_5Turbo,
+        messages: messages.clone(),
+        ..Default::default()
+    };
+
+    let return_value = client
+        .chat(input)
+        .await
+        .context("Failed to get chat response from client");
+    return_value
 }
 
 async fn process_user_input(
     client: &ChatGPTClient,
     messages: &mut Vec<Message>,
     user_message_content: String,
-) -> Result<(), ChatGPTError> {
+) -> anyhow::Result<()> {
     // Add the user message to the message history
     messages.push(Message {
         role: Role::User,
