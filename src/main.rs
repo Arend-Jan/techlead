@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{Context, Result};
 use chat_gpt_lib_rs::client::Message;
 use chat_gpt_lib_rs::{ChatGPTClient, ChatInput, ChatResponse, Model, Role};
 use console::{style, StyledObject};
@@ -14,7 +14,7 @@ use std::time::Duration;
 
 // The main function, which is asynchronous due to the API call
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<()> {
     // Initialize the logger
     env_logger::init();
 
@@ -79,7 +79,7 @@ async fn main() -> anyhow::Result<()> {
 // this is what makes this the techlead cli application
 // Here we set the behaviour of our chat gpt client
 // for now it works for Rust project only
-async fn system_content(api_key: &String) -> anyhow::Result<String> {
+async fn system_content(api_key: &String) -> Result<String> {
     let mut return_value = "You are a very helpfull techlead of this project, who likes to teach and show code solutions.".to_string();
     let root = ".";
     let walker = WalkBuilder::new(root)
@@ -97,14 +97,14 @@ async fn system_content(api_key: &String) -> anyhow::Result<String> {
         .build();
 
     return_value = format!(
-        "{}\n Directory tree (excluding /target and hidden directories\n",
+        "{}\n Directory tree (excluding /target and hidden directories)\n",
         return_value
     );
     for entry in walker.filter_map(Result::ok) {
         let depth = entry.depth().saturating_sub(1);
         let name = entry.file_name().to_string_lossy();
         let indent = "|____".repeat(depth);
-        return_value = format!("{}{}{}", return_value, indent, name);
+        return_value = format!("{}{}{}\n", return_value, indent, name);
 
         if let Some(file_type) = entry.file_type() {
             if file_type.is_file() {
@@ -113,7 +113,7 @@ async fn system_content(api_key: &String) -> anyhow::Result<String> {
 
                 if let Some(ext) = ext {
                     match ext {
-                        "md" | "rs" | "toml" => {
+                        "md" | "toml" => {
                             // Set up a spinner to display while waiting for the API response
                             let spinner = ProgressBar::new_spinner();
                             spinner.set_style(
@@ -132,15 +132,39 @@ async fn system_content(api_key: &String) -> anyhow::Result<String> {
                                 text_to_summarize =
                                     format!("{}{}\n", text_to_summarize, line.unwrap());
                             }
+                            // if name ends in .rs, add the entire input. if not, then make the
+                            // summary
+
                             //println!("to_summarize: {text_to_summarize}");
                             let summary = summary(&api_key, text_to_summarize).await?;
-                            return_value = format!("{return_value}\n {name} summary: {:?}", summary.choices[0].message.content);
+                            return_value = format!(
+                                "{return_value}\n {name} summary: {:?}",
+                                summary.choices[0].message.content
+                            );
 
                             spinner.finish_and_clear();
 
                             return_value = format!("{}\n", return_value);
+                        }
+                        "rs" => {
+                            let file = File::open(path).unwrap();
+                            let reader = BufReader::new(file);
+                            let mut compacted_code = String::new();
+                            for line in reader.lines() {
+                                let line = line.unwrap();
+                                let stripped_line = line.trim(); // Remove leading and trailing whitespace
+
+                                // Remove comments and empty lines
+                                if !stripped_line.starts_with("//") && !stripped_line.is_empty() {
+                                    compacted_code =
+                                        format!("{}{}\n", compacted_code, stripped_line);
+                                }
+                            }
+
+                            return_value = format!("{}{}\n", return_value, compacted_code);
                             println!("{return_value}");
                         }
+
                         _ => {}
                     }
                 }
@@ -150,9 +174,9 @@ async fn system_content(api_key: &String) -> anyhow::Result<String> {
     Ok(return_value)
 }
 
-async fn summary(api_key: &String, to_summarize: String) -> anyhow::Result<ChatResponse> {
+async fn summary(api_key: &String, to_summarize: String) -> Result<ChatResponse> {
     let client = ChatGPTClient::new(&api_key, "https://api.openai.com");
-    let content = "You output only the summary of a given input, with ther purpose to make give a consise input for a co-developer prompt. If there is code in the file, make it super compact and add it to the summary.".to_string();
+    let content = "Make a compact summary of the given input".to_string();
 
     // Initialize the message history with a system message
     let mut messages = vec![Message {
@@ -183,7 +207,7 @@ async fn process_user_input(
     client: &ChatGPTClient,
     messages: &mut Vec<Message>,
     user_message_content: String,
-) -> anyhow::Result<()> {
+) -> Result<()> {
     // Add the user message to the message history
     messages.push(Message {
         role: Role::User,
@@ -192,7 +216,7 @@ async fn process_user_input(
 
     // Prepare the ChatInput object for the API call
     let input = ChatInput {
-        model: Model::Gpt3_5Turbo,
+        model: Model::Gpt_4,
         messages: messages.clone(),
         ..Default::default()
     };
