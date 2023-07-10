@@ -12,7 +12,7 @@ categories = ["api-bindings", "text-processing", "cli"]
 
 [dependencies]
 anyhow = "1.0.70"
-chat-gpt-lib-rs = "0.1.7"
+chat-gpt-lib-rs = "0.2.0"
 console = "0.15.5"
 dotenvy = "0.15.6"
 env_logger = "0.10.0"
