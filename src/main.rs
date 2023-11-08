@@ -176,7 +176,7 @@ async fn system_content(api_key: &String) -> Result<String> {
 
 async fn summary(api_key: &String, to_summarize: String) -> Result<ChatResponse> {
     let client = ChatGPTClient::new(&api_key, "https://api.openai.com");
-    let content = "Make a compact summary of the given input".to_string();
+    let content = "Make a compact summary of the given input. if it is code, then give back only give back the code directly".to_string();
 
     // Initialize the message history with a system message
     let mut messages = vec![Message {

@@ -11,12 +11,12 @@ keywords = ["openai", "chatgpt", "gpt", "api", "client"]
 categories = ["api-bindings", "text-processing", "cli"]
 
 [dependencies]
-anyhow = "1.0.70"
+anyhow = "1.0"
 chat-gpt-lib-rs = "0.2.1"
-console = "0.15.5"
-dotenvy = "0.15.6"
-env_logger = "0.10.0"
-ignore = "0.4.20"
-indicatif = "0.17.3"
-keyring = "2.0.1"
-tokio = "1.26.0"
+console = "0.15"
+dotenvy = "0.15"
+env_logger = "0.10"
+ignore = "0.4"
+indicatif = "0.17"
+keyring = "2.0"
+tokio = "1.33"
