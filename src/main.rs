@@ -191,7 +191,7 @@ async fn summary(api_key: &String, to_summarize: String) -> Result<ChatResponse>
     });
 
     let input = ChatInput {
-        model: Model::Gpt_4,
+        model: Model::Gpt_4Turbo,
         messages: messages.clone(),
         ..Default::default()
     };

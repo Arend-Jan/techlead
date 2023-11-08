@@ -1,6 +1,6 @@
 [package]
 name = "techlead"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "Techlead CLI is a command-line interface that enables developers to chat with an AI assistant powered by the OpenAI GPT language model, designed specifically to help with your Rust project."
 license = "Apache-2.0"
@@ -12,7 +12,7 @@ categories = ["api-bindings", "text-processing", "cli"]
 
 [dependencies]
 anyhow = "1.0"
-chat-gpt-lib-rs = "0.2.1"
+chat-gpt-lib-rs = "0.3.0"
 console = "0.15"
 dotenvy = "0.15"
 env_logger = "0.10"
