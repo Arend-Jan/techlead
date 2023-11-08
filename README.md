@@ -27,7 +27,7 @@ techlead "Hello, how can I help you today?"
 ```
 
 ## Credits
-This project was made with the [Chat GPT Library for Rust](https://github.com/BlackPhlox/techlead), which provides a Rust API for the OpenAI GPT language model.
+This project was made with the [Chat GPT Library for Rust](https://github.com/Arend-Jan/techlead), which provides a Rust API for the OpenAI GPT language model.
 
 ## License
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
