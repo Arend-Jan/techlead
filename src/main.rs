@@ -79,7 +79,7 @@ async fn main() -> Result<()> {
 // this is what makes this the techlead cli application
 // Here we set the behaviour of our chat gpt client
 // for now it works for Rust project only
-async fn system_content(api_key: &String) -> Result<String> {
+async fn system_content(api_key: &str) -> Result<String> {
     let mut return_value = "You are a very helpfull techlead of this project, who likes to teach and show code solutions.".to_string();
     let root = ".";
     let walker = WalkBuilder::new(root)
@@ -136,7 +136,7 @@ async fn system_content(api_key: &String) -> Result<String> {
                             // summary
 
                             //println!("to_summarize: {text_to_summarize}");
-                            let summary = summary(&api_key, text_to_summarize).await?;
+                            let summary = summary(api_key, text_to_summarize).await?;
                             return_value = format!(
                                 "{return_value}\n {name} summary: {:?}",
                                 summary.choices[0].message.content
@@ -174,8 +174,8 @@ async fn system_content(api_key: &String) -> Result<String> {
     Ok(return_value)
 }
 
-async fn summary(api_key: &String, to_summarize: String) -> Result<ChatResponse> {
-    let client = ChatGPTClient::new(&api_key, "https://api.openai.com");
+async fn summary(api_key: &str, to_summarize: String) -> Result<ChatResponse> {
+    let client = ChatGPTClient::new(api_key, "https://api.openai.com");
     let content = "Make a compact summary of the given input. if it is code, then give back only give back the code directly".to_string();
 
     // Initialize the message history with a system message
@@ -187,7 +187,7 @@ async fn summary(api_key: &String, to_summarize: String) -> Result<ChatResponse>
     // Add a user message with the text to be summarized
     messages.push(Message {
         role: Role::User,
-        content: format!("{}", to_summarize),
+        content: to_summarize.to_string(),
     });
 
     let input = ChatInput {
@@ -196,11 +196,10 @@ async fn summary(api_key: &String, to_summarize: String) -> Result<ChatResponse>
         ..Default::default()
     };
 
-    let return_value = client
+    client
         .chat(input)
         .await
-        .context("Failed to get chat response from client");
-    return_value
+        .context("Failed to get chat response from client")
 }
 
 async fn process_user_input(
